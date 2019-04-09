@@ -3,7 +3,7 @@
 #include <time.h>
 #include <pthread.h>
 
-#define ARRAY_SIZE 10
+#define ARRAY_SIZE 1024
 #define NUM_THREADS 4
 
 typedef struct kit_t {
@@ -20,8 +20,9 @@ void *array_build(void *kit) {
     int num_positions = ARRAY_SIZE / NUM_THREADS;
 
     for (int i = thread_id * num_positions;
-                                    i < (thread_id + 1) * num_positions; i++)
+                                    i < (thread_id + 1) * num_positions; i++) {
         array[i] = rand() % ARRAY_SIZE;
+    }
 
     pthread_exit(NULL);
 }
@@ -34,18 +35,24 @@ void *array_greatest(void *kit) {
     int *array = kit_casted->array;
     int *result;
     int num_positions = ARRAY_SIZE / NUM_THREADS;
-   
-    result=malloc(sizeof(int));
-    *result=0;
-    
+
+    result = malloc(sizeof(int));
+    *result = 0;
+
     for (int i = thread_id * num_positions;
-                                    i < (thread_id + 1) * num_positions; i++){
-        if(array[i]>*result){
-            *result=array[i];
+                                    i < (thread_id + 1) * num_positions; i++) {
+        if(array[i] > *result) {
+            *result = array[i];
         }
     }
-    
+
     pthread_exit(result);
+}
+
+void array_print(int *array) {
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        printf("array[%10d]: %10d\n", i, array[i]);
+    }
 }
 
 int main(int argc, char const *argv[]) {
@@ -53,7 +60,7 @@ int main(int argc, char const *argv[]) {
     srand(time(0));
 
     void *thread_return;
-    int result=0;
+    int result = 0;
 
     // Creating a int array of 4 MB
     int *array = (int *) malloc(ARRAY_SIZE * sizeof(int));
@@ -96,7 +103,7 @@ int main(int argc, char const *argv[]) {
             exit(-1);
         }
      }
-    
+
     // Joining threads
     for (int i = 0; i < NUM_THREADS; i++) {
         if (pthread_join(threads[i], &thread_return)) {
@@ -104,13 +111,14 @@ int main(int argc, char const *argv[]) {
             printf("Error joining thread %d", i);
             exit(-1);
         }
-        if(result<*(int*)thread_return){
-            result=*(int*)thread_return;
+        if (result < *(int *) thread_return){
+            result = *(int *) thread_return;
         }
      }
-     printf("The final result is %d.\n", result);
 
+    array_print(array);
 
+    printf("The greatest element in the array is %d.\n", result);
 
     return 0;
 }
