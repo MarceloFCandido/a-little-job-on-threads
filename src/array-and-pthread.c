@@ -17,6 +17,7 @@ void *array_build(void *kit) {
     int thread_id = kit_casted->thread_id;
     int *array = kit_casted->array;
 
+    // determining how many points this thead should evaluate
     int num_positions = ARRAY_SIZE / NUM_THREADS;
 
     for (int i = thread_id * num_positions;
@@ -34,6 +35,7 @@ void *array_greatest(void *kit) {
     int thread_id = kit_casted->thread_id;
     int *array = kit_casted->array;
     int *result;
+
     int num_positions = ARRAY_SIZE / NUM_THREADS;
 
     result = malloc(sizeof(int));
@@ -41,11 +43,13 @@ void *array_greatest(void *kit) {
 
     for (int i = thread_id * num_positions;
                                     i < (thread_id + 1) * num_positions; i++) {
+        // comparing if the ith element is greater than the last result
         if(array[i] > *result) {
             *result = array[i];
         }
     }
 
+    // returning result for the caller and exiting the thread
     pthread_exit(result);
 }
 
